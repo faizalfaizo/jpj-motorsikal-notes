@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B Full Motorsikal — RPM & RSM Visual Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #00ff88;
+    --text: #e8f0fe;
+    --muted: #6b7fa3;
+    --bike: #c8d6e8;
+    --bike-dark: #8899bb;
+    --bike-accent: #ff6b35;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .header {
+    text-align: center;
+    padding: 32px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0d1529 0%, var(--bg) 100%);
+  }
+
+  .header h1 {
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,212,255,0.4);
+  }
+
+  .header p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 8px 28px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .tab:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .diagram-container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .diagram-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .bike-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Callout styles */
+  .callout {
+    position: absolute;
+    background: rgba(10,14,26,0.92);
+    border: 1px solid var(--accent);
+    padding: 8px 12px;
+    font-size: clamp(10px, 1.5vw, 13px);
+    font-weight: 600;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 12px rgba(0,212,255,0.2);
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .callout.orange { border-color: var(--accent2); box-shadow: 0 0 12px rgba(255,107,53,0.2); }
+  .callout.orange .callout-num { background: var(--accent2); }
+  .callout.green { border-color: var(--accent3); box-shadow: 0 0 12px rgba(0,255,136,0.2); }
+  .callout.green .callout-num { background: var(--accent3); color: #000; }
+
+  .callout-num {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .callout-text { color: var(--text); }
+
+  .connector-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 8px var(--accent);
+    transform: translate(-50%, -50%);
+  }
+
+  .connector-dot.orange { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+  .connector-dot.green { background: var(--accent3); box-shadow: 0 0 8px var(--accent3); }
+
+  .section-panel {
+    display: none;
+  }
+  .section-panel.active {
+    display: block;
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  .checklist {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .checklist { grid-template-columns: 1fr; }
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .check-item:hover { border-color: var(--accent); }
+  .check-item.checked {
+    border-color: var(--accent3);
+    background: rgba(0,255,136,0.05);
+  }
+  .check-item.checked .check-num { background: var(--accent3); color: #000; }
+
+  .check-num {
+    width: 22px; height: 22px;
+    background: var(--border);
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .progress-bar {
+    max-width: 700px;
+    margin: 12px auto 0;
+    padding: 0 20px;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--border);
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent3);
+    transition: width 0.3s;
+    box-shadow: 0 0 8px var(--accent3);
+  }
+
+  .progress-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .cito-box {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+
+  .cito-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cito-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-left: 3px solid var(--accent2);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .cito-icon { font-size: 20px; }
+
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏍️ B Full Motorsikal — Visual Reference</h1>
+  <p>JPJ TEST STUDY GUIDE · CLASS 1</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('rpm')">RPM — Pemeriksaan</button>
+  <button class="tab" onclick="showTab('rsm')">RSM — Sebelum Bergerak</button>
+  <button class="tab" onclick="showTab('cito')">CITO — Prosedur</button>
+</div>
+
+<!-- RPM TAB -->
+<div id="tab-rpm" class="section-panel active">
+  <div class="diagram-container">
+    <div class="diagram-wrapper" style="position:relative;">
+      <svg class="bike-svg" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background grid -->
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2540" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="900" height="420" fill="#0a0e1a"/>
+        <rect width="900" height="420" fill="url(#grid)"/>
+
+        <!-- GROUND LINE -->
+        <line x1="80" y1="350" x2="820" y2="350" stroke="#1e2d45" stroke-width="1"/>
+
+        <!-- === REAR WHEEL === -->
+        <circle cx="220" cy="300" r="80" fill="none" stroke="#8899bb" stroke-width="8"/>
+        <circle cx="220" cy="300" r="65" fill="none" stroke="#4a5a7a" stroke-width="3"/>
+        <circle cx="220" cy="300" r="20" fill="#4a5a7a"/>
+        <!-- spokes -->
+        <g stroke="#4a5a7a" stroke-width="2">
+          <line x1="220" y1="230" x2="220" y2="370"/>
+          <line x1="150" y1="300" x2="290" y2="300"/>
+          <line x1="170" y1="250" x2="270" y2="350"/>
+          <line x1="170" y1="350" x2="270" y2="250"/>
+        </g>
+        <!-- tyre -->
+        <circle cx="220" cy="300" r="80" fill="none" stroke="#c8d6e8" stroke-width="12" stroke-opacity="0.3"/>
+
+        <!-- === FRONT WHEEL === -->
+        <circle cx="680" cy="300" r="80" fill="none" stroke="#8899bb" stroke-width="8"/>
+        <circle cx="680" cy="300" r="65" fill="none" stroke="#4a5a7a" stroke-width="3"/>
+        <circle cx="680" cy="300" r="20" fill="#4a5a7a"/>
+        <g stroke="#4a5a7a" stroke-width="2">
+          <line x1="680" y1="230" x2="680" y2="370"/>
+          <line x1="610" y1="300" x2="750" y2="300"/>
+          <line x1="630" y1="250" x2="730" y2="350"/>
+          <line x1="630" y1="350" x2="730" y2="250"/>
+        </g>
+        <circle cx="680" cy="300" r="80" fill="none" stroke="#c8d6e8" stroke-width="12" stroke-opacity="0.3"/>
+
+        <!-- === FRAME === -->
+        <!-- Main frame tubes -->
+        <path d="M 280 280 L 380 150 L 540 130 L 600 180 L 620 280" fill="none" stroke="#c8d6e8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Seat tube -->
+        <path d="M 380 150 L 340 280" fill="none" stroke="#8899bb" stroke-width="8" stroke-linecap="round"/>
+        <!-- Chain stay -->
+        <path d="M 280 280 L 340 280 L 380 150" fill="none" stroke="#8899bb" stroke-width="6" stroke-linecap="round"/>
+        <!-- Under frame -->
+        <path d="M 280 280 Q 420 320 540 300 L 620 280" fill="none" stroke="#6a7a9a" stroke-width="5"/>
+
+        <!-- === ENGINE / TANK BODY === -->
+        <ellipse cx="450" cy="230" rx="120" ry="60" fill="#1a2a3a" stroke="#4a6080" stroke-width="2"/>
+        <!-- Tank -->
+        <path d="M 380 150 Q 450 120 540 130 Q 560 160 540 180 Q 470 170 400 175 Z" fill="#2a3a50" stroke="#4a6080" stroke-width="2"/>
+        <!-- Engine block -->
+        <rect x="370" y="230" width="130" height="70" rx="4" fill="#1e2e40" stroke="#3a5070" stroke-width="2"/>
+        <rect x="385" y="245" width="40" height="40" rx="2" fill="#162030" stroke="#3a5070" stroke-width="1"/>
+        <rect x="440" y="245" width="40" height="40" rx="2" fill="#162030" stroke="#3a5070" stroke-width="1"/>
+
+        <!-- === SEAT === -->
+        <path d="M 330 170 Q 380 145 440 148 Q 470 148 480 155 L 475 175 Q 440 168 380 170 Q 345 175 335 185 Z" fill="#2a2a3a" stroke="#4a4a5a" stroke-width="2"/>
+
+        <!-- === SWINGARM === -->
+        <path d="M 340 280 Q 280 285 220 300" fill="none" stroke="#8899bb" stroke-width="8" stroke-linecap="round"/>
+
+        <!-- === FRONT FORK === -->
+        <line x1="600" y1="180" x2="640" y2="300" stroke="#8899bb" stroke-width="10" stroke-linecap="round"/>
+        <line x1="590" y1="185" x2="630" y2="300" stroke="#6a7a9a" stroke-width="6" stroke-linecap="round"/>
+
+        <!-- === HANDLEBAR === -->
+        <line x1="570" y1="130" x2="630" y2="130" stroke="#c8d6e8" stroke-width="8" stroke-linecap="round"/>
+        <line x1="600" y1="130" x2="600" y2="165" stroke="#c8d6e8" stroke-width="8" stroke-linecap="round"/>
+        <!-- Grips -->
+        <rect x="620" y="122" width="24" height="16" rx="8" fill="#ff6b35"/>
+        <rect x="556" y="122" width="24" height="16" rx="8" fill="#ff6b35"/>
+
+        <!-- === EXHAUST === -->
+        <path d="M 420 290 Q 350 310 290 295 Q 240 285 230 290" fill="none" stroke="#8a7a50" stroke-width="6" stroke-linecap="round"/>
+
+        <!-- === HEADLIGHT === -->
+        <ellipse cx="700" cy="195" rx="22" ry="18" fill="#1a2a3a" stroke="#00d4ff" stroke-width="2"/>
+        <ellipse cx="700" cy="195" rx="14" ry="11" fill="#002030" stroke="#00d4ff" stroke-width="1"/>
+        <ellipse cx="700" cy="195" rx="7" ry="6" fill="#00d4ff" opacity="0.6"/>
+        <!-- headlight glow -->
+        <ellipse cx="700" cy="195" rx="22" ry="18" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
+
+        <!-- === TAIL LIGHT === -->
+        <rect x="185" y="255" width="30" height="16" rx="3" fill="#3a0000" stroke="#ff3333" stroke-width="1.5"/>
+        <rect x="190" y="258" width="20" height="10" rx="2" fill="#ff0000" opacity="0.7"/>
+
+        <!-- === MIRRORS === -->
+        <!-- Left mirror -->
+        <line x1="556" y1="130" x2="530" y2="112" stroke="#8899bb" stroke-width="3"/>
+        <ellipse cx="524" cy="108" rx="14" ry="9" fill="#2a3a50" stroke="#c8d6e8" stroke-width="2"/>
+        <!-- Right mirror -->
+        <line x1="644" y1="130" x2="668" y2="112" stroke="#8899bb" stroke-width="3"/>
+        <ellipse cx="674" cy="108" rx="14" ry="9" fill="#2a3a50" stroke="#c8d6e8" stroke-width="2"/>
+
+        <!-- === FRONT SIGNAL === -->
+        <rect x="720" y="218" width="16" height="10" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+        <rect x="665" y="218" width="16" height="10" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+
+        <!-- === REAR SIGNAL === -->
+        <rect x="175" y="272" width="14" height="9" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+        <rect x="200" y="272" width="14" height="9" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+
+        <!-- === FRONT PLATE === -->
+        <rect x="660" y="340" width="50" height="20" rx="2" fill="#f5f5dc" stroke="#999" stroke-width="1"/>
+        <text x="685" y="354" text-anchor="middle" font-family="monospace" font-size="7" fill="#333">WXX 0000</text>
+
+        <!-- === REAR PLATE === -->
+        <rect x="190" y="340" width="50" height="20" rx="2" fill="#f5f5dc" stroke="#999" stroke-width="1"/>
+        <text x="215" y="354" text-anchor="middle" font-family="monospace" font-size="7" fill="#333">WXX 0000</text>
+
+        <!-- === FUEL CAP / ROAD TAX === -->
+        <circle cx="480" cy="138" r="8" fill="#2a3a50" stroke="#00d4ff" stroke-width="1.5"/>
+        <!-- Road tax sticker on fork -->
+        <rect x="605" y="200" width="16" height="12" rx="1" fill="#003300" stroke="#00ff88" stroke-width="1"/>
+
+        <!-- === ENGINE OIL INDICATOR === -->
+        <rect x="390" y="247" width="35" height="12" rx="2" fill="#1a0a00" stroke="#ff6b35" stroke-width="1"/>
+        <text x="407" y="256" text-anchor="middle" font-family="monospace" font-size="6" fill="#ff6b35">OIL</text>
+
+        <!-- === CHAIN === -->
+        <path d="M 280 300 Q 310 310 340 295 Q 380 280 420 290 Q 380 305 340 315 Q 310 325 280 315 Z" fill="none" stroke="#6a7a5a" stroke-width="3" stroke-dasharray="5,3"/>
+
+        <!-- CALLOUT LINES - subtle dots on bike parts -->
+        <!-- Rear lamp dot -->
+        <circle cx="200" cy="263" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Rear signal dot -->
+        <circle cx="207" cy="276" r="5" fill="#ff9900" opacity="0.9"/>
+        <!-- Rear plate dot -->
+        <circle cx="215" cy="350" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Rear wheel dot -->
+        <circle cx="155" cy="320" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Chain dot -->
+        <circle cx="360" cy="300" r="5" fill="#00ff88" opacity="0.9"/>
+        <!-- Underseat dot -->
+        <circle cx="360" cy="175" r="5" fill="#00ff88" opacity="0.9"/>
+        <!-- Tank dot -->
+        <circle cx="480" cy="138" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Mirror dot (left) -->
+        <circle cx="524" cy="108" r="5" fill="#ff6b35" opacity="0.9"/>
+        <!-- Headlight dot -->
+        <circle cx="700" cy="195" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Mirror dot (right) -->
+        <circle cx="674" cy="108" r="5" fill="#ff6b35" opacity="0.9"/>
+        <!-- Front plate dot -->
+        <circle cx="685" cy="350" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Road tax dot -->
+        <circle cx="613" cy="206" r="5" fill="#00ff88" opacity="0.9"/>
+        <!-- Front wheel dot -->
+        <circle cx="750" cy="320" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Engine oil dot -->
+        <circle cx="407" cy="253" r="5" fill="#ff6b35" opacity="0.9"/>
+        <!-- Front signal dot -->
+        <circle cx="728" cy="223" r="5" fill="#ff9900" opacity="0.9"/>
+      </svg>
+
+      <!-- CALLOUT BOXES - positioned absolutely over SVG -->
+      <!-- 1. Rear Lamp -->
+      <div class="callout" style="left:0%; top:52%; transform:translateY(-50%);">
+        <span class="callout-num">1</span><span class="callout-text">REAR LAMP</span>
+      </div>
+      <!-- 2. Rear Signal -->
+      <div class="callout orange" style="left:0%; top:62%;">
+        <span class="callout-num">2</span><span class="callout-text">REAR SIGNAL</span>
+      </div>
+      <!-- 3. Rear Plate -->
+      <div class="callout" style="left:1%; top:80%;">
+        <span class="callout-num">3</span><span class="callout-text">REAR PLATE</span>
+      </div>
+      <!-- 4. Rear Wheel -->
+      <div class="callout" style="left:0%; top:90%;">
+        <span class="callout-num">4</span><span class="callout-text">REAR WHEEL — tyre, pressure, tread</span>
+      </div>
+      <!-- 5. Chain -->
+      <div class="callout green" style="left:30%; top:88%;">
+        <span class="callout-num">5</span><span class="callout-text">CHAIN</span>
+      </div>
+      <!-- 6. Underseat -->
+      <div class="callout green" style="left:28%; top:26%;">
+        <span class="callout-num">6</span><span class="callout-text">UNDERSEAT — battery, toolbox</span>
+      </div>
+      <!-- 7. Fuel Tank -->
+      <div class="callout" style="left:44%; top:14%;">
+        <span class="callout-num">7</span><span class="callout-text">FUEL TANK — level & rubber cap</span>
+      </div>
+      <!-- 8. Left Mirror -->
+      <div class="callout orange" style="left:46%; top:2%;">
+        <span class="callout-num">8</span><span class="callout-text">SIDE MIRRORS (L&R)</span>
+      </div>
+      <!-- 9. Front Lamp -->
+      <div class="callout" style="right:1%; top:38%;">
+        <span class="callout-num">9</span><span class="callout-text">FRONT LAMP</span>
+      </div>
+      <!-- 10. Front Signal -->
+      <div class="callout orange" style="right:1%; top:50%;">
+        <span class="callout-num">10</span><span class="callout-text">FRONT SIGNAL</span>
+      </div>
+      <!-- 11. Front Plate -->
+      <div class="callout" style="right:1%; top:80%;">
+        <span class="callout-num">11</span><span class="callout-text">FRONT PLATE</span>
+      </div>
+      <!-- 12. Road Tax -->
+      <div class="callout green" style="right:1%; top:64%;">
+        <span class="callout-num">12</span><span class="callout-text">ROAD TAX</span>
+      </div>
+      <!-- 13. Front Wheel -->
+      <div class="callout" style="right:0%; top:90%;">
+        <span class="callout-num">13</span><span class="callout-text">FRONT WHEEL — tyre, pressure, tread</span>
+      </div>
+      <!-- 14. Engine Oil -->
+      <div class="callout orange" style="left:32%; top:60%;">
+        <span class="callout-num">14</span><span class="callout-text">ENGINE OIL</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div> General Check</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6b35"></div> Functional/Moving Parts</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00ff88"></div> Documentation/Safety</div>
+  </div>
+
+  <!-- Interactive Checklist -->
+  <div class="progress-bar">
+    <div class="progress-label">PROGRESS: <span id="rpm-count">0</span>/14 CHECKS COMPLETED</div>
+    <div class="progress-track"><div class="progress-fill" id="rpm-progress" style="width:0%"></div></div>
+  </div>
+  <div class="checklist" id="rpm-checklist">
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">1</div>Rear Lamp</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">2</div>Rear Signal</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">3</div>Rear Plate Number</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">4</div>Rear Wheel</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">5</div>Motorcycle Chain</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">6</div>Underseat (Battery & Toolbox)</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">7</div>Fuel Tank</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">8</div>Side Mirrors</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">9</div>Front Lamp</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">10</div>Front Signal</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">11</div>Front Plate Number</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">12</div>Road Tax</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">13</div>Front Wheel</div>
+    <div class="check-item" onclick="toggleCheck(this,'rpm')"><div class="check-num">14</div>Engine Oil</div>
+  </div>
+</div>
+
+<!-- RSM TAB -->
+<div id="tab-rsm" class="section-panel">
+  <div class="diagram-container">
+    <div class="diagram-wrapper" style="position:relative;">
+      <svg class="bike-svg" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg">
+        <rect width="900" height="420" fill="#0a0e1a"/>
+        <rect width="900" height="420" fill="url(#grid)"/>
+        <line x1="80" y1="350" x2="820" y2="350" stroke="#1e2d45" stroke-width="1"/>
+
+        <!-- Same bike SVG content reused -->
+        <circle cx="220" cy="300" r="80" fill="none" stroke="#8899bb" stroke-width="8"/>
+        <circle cx="220" cy="300" r="65" fill="none" stroke="#4a5a7a" stroke-width="3"/>
+        <circle cx="220" cy="300" r="20" fill="#4a5a7a"/>
+        <g stroke="#4a5a7a" stroke-width="2">
+          <line x1="220" y1="230" x2="220" y2="370"/>
+          <line x1="150" y1="300" x2="290" y2="300"/>
+          <line x1="170" y1="250" x2="270" y2="350"/>
+          <line x1="170" y1="350" x2="270" y2="250"/>
+        </g>
+        <circle cx="220" cy="300" r="80" fill="none" stroke="#c8d6e8" stroke-width="12" stroke-opacity="0.3"/>
+
+        <circle cx="680" cy="300" r="80" fill="none" stroke="#8899bb" stroke-width="8"/>
+        <circle cx="680" cy="300" r="65" fill="none" stroke="#4a5a7a" stroke-width="3"/>
+        <circle cx="680" cy="300" r="20" fill="#4a5a7a"/>
+        <g stroke="#4a5a7a" stroke-width="2">
+          <line x1="680" y1="230" x2="680" y2="370"/>
+          <line x1="610" y1="300" x2="750" y2="300"/>
+          <line x1="630" y1="250" x2="730" y2="350"/>
+          <line x1="630" y1="350" x2="730" y2="250"/>
+        </g>
+        <circle cx="680" cy="300" r="80" fill="none" stroke="#c8d6e8" stroke-width="12" stroke-opacity="0.3"/>
+
+        <path d="M 280 280 L 380 150 L 540 130 L 600 180 L 620 280" fill="none" stroke="#c8d6e8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 380 150 L 340 280" fill="none" stroke="#8899bb" stroke-width="8" stroke-linecap="round"/>
+        <path d="M 280 280 L 340 280 L 380 150" fill="none" stroke="#8899bb" stroke-width="6" stroke-linecap="round"/>
+        <path d="M 280 280 Q 420 320 540 300 L 620 280" fill="none" stroke="#6a7a9a" stroke-width="5"/>
+
+        <ellipse cx="450" cy="230" rx="120" ry="60" fill="#1a2a3a" stroke="#4a6080" stroke-width="2"/>
+        <path d="M 380 150 Q 450 120 540 130 Q 560 160 540 180 Q 470 170 400 175 Z" fill="#2a3a50" stroke="#4a6080" stroke-width="2"/>
+        <rect x="370" y="230" width="130" height="70" rx="4" fill="#1e2e40" stroke="#3a5070" stroke-width="2"/>
+
+        <path d="M 330 170 Q 380 145 440 148 Q 470 148 480 155 L 475 175 Q 440 168 380 170 Q 345 175 335 185 Z" fill="#2a2a3a" stroke="#4a4a5a" stroke-width="2"/>
+        <path d="M 340 280 Q 280 285 220 300" fill="none" stroke="#8899bb" stroke-width="8" stroke-linecap="round"/>
+        <line x1="600" y1="180" x2="640" y2="300" stroke="#8899bb" stroke-width="10" stroke-linecap="round"/>
+        <line x1="590" y1="185" x2="630" y2="300" stroke="#6a7a9a" stroke-width="6" stroke-linecap="round"/>
+
+        <!-- Handlebar highlighted for RSM -->
+        <line x1="570" y1="130" x2="630" y2="130" stroke="#c8d6e8" stroke-width="8" stroke-linecap="round"/>
+        <line x1="600" y1="130" x2="600" y2="165" stroke="#c8d6e8" stroke-width="8" stroke-linecap="round"/>
+        <rect x="620" y="122" width="24" height="16" rx="8" fill="#ff6b35"/>
+        <rect x="556" y="122" width="24" height="16" rx="8" fill="#ff6b35"/>
+
+        <!-- Front brake lever highlight -->
+        <line x1="634" y1="130" x2="648" y2="148" stroke="#00ff88" stroke-width="4"/>
+        <!-- Rear brake pedal -->
+        <rect x="310" y="290" width="30" height="8" rx="3" fill="#00ff88" opacity="0.8"/>
+
+        <path d="M 420 290 Q 350 310 290 295 Q 240 285 230 290" fill="none" stroke="#8a7a50" stroke-width="6" stroke-linecap="round"/>
+
+        <ellipse cx="700" cy="195" rx="22" ry="18" fill="#1a2a3a" stroke="#00d4ff" stroke-width="2"/>
+        <ellipse cx="700" cy="195" rx="14" ry="11" fill="#002030" stroke="#00d4ff" stroke-width="1"/>
+        <ellipse cx="700" cy="195" rx="7" ry="6" fill="#00d4ff" opacity="0.6"/>
+
+        <rect x="185" y="255" width="30" height="16" rx="3" fill="#3a0000" stroke="#ff3333" stroke-width="1.5"/>
+        <rect x="190" y="258" width="20" height="10" rx="2" fill="#ff0000" opacity="0.7"/>
+
+        <line x1="556" y1="130" x2="530" y2="112" stroke="#8899bb" stroke-width="3"/>
+        <ellipse cx="524" cy="108" rx="14" ry="9" fill="#2a3a50" stroke="#c8d6e8" stroke-width="2"/>
+        <line x1="644" y1="130" x2="668" y2="112" stroke="#8899bb" stroke-width="3"/>
+        <ellipse cx="674" cy="108" rx="14" ry="9" fill="#2a3a50" stroke="#c8d6e8" stroke-width="2"/>
+
+        <rect x="720" y="218" width="16" height="10" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+        <rect x="665" y="218" width="16" height="10" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+        <rect x="175" y="272" width="14" height="9" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+        <rect x="200" y="272" width="14" height="9" rx="2" fill="#3a2000" stroke="#ff9900" stroke-width="1.5"/>
+
+        <!-- RSM dots -->
+        <!-- Front brake -->
+        <circle cx="641" cy="139" r="5" fill="#00ff88" opacity="0.9"/>
+        <!-- Rear brake -->
+        <circle cx="325" cy="290" r="5" fill="#00ff88" opacity="0.9"/>
+        <!-- Mirrors -->
+        <circle cx="524" cy="108" r="5" fill="#ff6b35" opacity="0.9"/>
+        <circle cx="674" cy="108" r="5" fill="#ff6b35" opacity="0.9"/>
+        <!-- Headlight -->
+        <circle cx="700" cy="195" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Tail light -->
+        <circle cx="200" cy="263" r="5" fill="#00d4ff" opacity="0.9"/>
+        <!-- Signals front -->
+        <circle cx="693" cy="223" r="5" fill="#ff9900" opacity="0.9"/>
+        <!-- Signals rear -->
+        <circle cx="207" cy="276" r="5" fill="#ff9900" opacity="0.9"/>
+      </svg>
+
+      <!-- RSM Callout boxes -->
+      <div class="callout green" style="right:1%; top:24%;">
+        <span class="callout-num">1</span><span class="callout-text">FRONT BRAKE LEVER</span>
+      </div>
+      <div class="callout green" style="left:25%; top:62%;">
+        <span class="callout-num">2</span><span class="callout-text">REAR BRAKE PEDAL</span>
+      </div>
+      <div class="callout orange" style="left:46%; top:2%;">
+        <span class="callout-num">3</span><span class="callout-text">SIDE MIRRORS (L&R)</span>
+      </div>
+      <div class="callout" style="right:1%; top:38%;">
+        <span class="callout-num">4</span><span class="callout-text">FRONT LAMP</span>
+      </div>
+      <div class="callout" style="left:0%; top:52%;">
+        <span class="callout-num">4</span><span class="callout-text">TAIL LIGHT</span>
+      </div>
+      <div class="callout orange" style="right:1%; top:50%;">
+        <span class="callout-num">5</span><span class="callout-text">FRONT SIGNAL (L&R)</span>
+      </div>
+      <div class="callout orange" style="left:0%; top:62%;">
+        <span class="callout-num">5</span><span class="callout-text">REAR SIGNAL (L&R)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-label">PROGRESS: <span id="rsm-count">0</span>/7 CHECKS COMPLETED</div>
+    <div class="progress-track"><div class="progress-fill" id="rsm-progress" style="width:0%"></div></div>
+  </div>
+  <div class="checklist" id="rsm-checklist">
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">✓</div>Helmet Buckle Secured</div>
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">✓</div>Reflective Vest Worn</div>
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">1</div>Front Brake</div>
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">2</div>Rear Brake</div>
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">3</div>Side Mirrors</div>
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">4</div>Front Lamp & Tail Light</div>
+    <div class="check-item" onclick="toggleCheck(this,'rsm')"><div class="check-num">5</div>Signal Left & Right (F&R)</div>
+  </div>
+</div>
+
+<!-- CITO TAB -->
+<div id="tab-cito" class="section-panel">
+  <div style="text-align:center; padding: 30px 20px 10px;">
+    <div style="font-family:'Share Tech Mono',monospace; color:var(--accent2); font-size:13px; letter-spacing:3px;">CITO PROCEDURE — BEFORE MOVING OFF</div>
+    <div style="font-size:clamp(24px,5vw,42px); font-weight:700; letter-spacing:8px; margin-top:8px; color:var(--text);">C · I · T · O</div>
+  </div>
+
+  <div class="cito-box">
+    <div class="cito-steps">
+      <div class="cito-step">
+        <div class="cito-icon">👁️</div>
+        <div>
+          <div style="color:var(--accent); font-size:11px; letter-spacing:2px;">STEP 1</div>
+          Look <strong>RIGHT</strong>
+        </div>
+      </div>
+      <div class="cito-step">
+        <div class="cito-icon">👁️</div>
+        <div>
+          <div style="color:var(--accent); font-size:11px; letter-spacing:2px;">STEP 2</div>
+          Look <strong>LEFT</strong>
+        </div>
+      </div>
+      <div class="cito-step">
+        <div class="cito-icon">👁️</div>
+        <div>
+          <div style="color:var(--accent); font-size:11px; letter-spacing:2px;">STEP 3</div>
+          Look <strong>RIGHT</strong> again
+        </div>
+      </div>
+      <div class="cito-step">
+        <div class="cito-icon">🔄</div>
+        <div>
+          <div style="color:var(--accent); font-size:11px; letter-spacing:2px;">STEP 4</div>
+          Turn back — check for vehicles <strong>from behind</strong>
+        </div>
+      </div>
+      <div class="cito-step">
+        <div class="cito-icon">✋</div>
+        <div>
+          <div style="color:var(--accent); font-size:11px; letter-spacing:2px;">STEP 5</div>
+          Raise <strong>right hand</strong>
+        </div>
+      </div>
+      <div class="cito-step">
+        <div class="cito-icon">📯</div>
+        <div>
+          <div style="color:var(--accent); font-size:11px; letter-spacing:2px;">STEP 6</div>
+          Press <strong>horn</strong>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; padding:16px; background:var(--surface); border:1px solid var(--accent2); border-left-width:3px;">
+      <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--accent2); letter-spacing:2px; margin-bottom:8px;">⚠️ JPJ EXAMINER TIP</div>
+      <div style="font-size:13px; color:var(--muted);">Make ALL head movements deliberate and exaggerated. The examiner needs to clearly see each directional check being performed.</div>
+    </div>
+  </div>
+</div>
+
+<footer>B FULL MOTORSIKAL · JPJ TEST REFERENCE · CLASS 1 OF 4</footer>
+
+<script>
+  function showTab(tab) {
+    document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function toggleCheck(el, type) {
+    el.classList.toggle('checked');
+    const checklist = document.getElementById(type + '-checklist');
+    const total = checklist.querySelectorAll('.check-item').length;
+    const checked = checklist.querySelectorAll('.check-item.checked').length;
+    document.getElementById(type + '-count').textContent = checked;
+    document.getElementById(type + '-progress').style.width = (checked / total * 100) + '%';
+  }
+</script>
+</body>
+</html>
